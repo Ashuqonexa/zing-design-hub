@@ -1,8 +1,7 @@
-import { Bell, Search, ChevronDown, Sparkles } from "lucide-react";
+import { Bell, ChevronDown, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,8 @@ interface HeaderProps {
 }
 
 export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <header className="sticky top-0 z-30 h-16 bg-card border-b border-border flex items-center justify-between px-6">
       {/* Navigation Tabs */}
@@ -85,8 +86,12 @@ export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              Settings
+            </DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">

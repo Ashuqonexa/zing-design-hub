@@ -3,6 +3,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProfilePhotoCard } from "@/components/profile/ProfilePhotoCard";
 import { PersonalInfoCard } from "@/components/profile/PersonalInfoCard";
 import { EmploymentInfoCard } from "@/components/profile/EmploymentInfoCard";
+import { EmergencyContactCard } from "@/components/profile/EmergencyContactCard";
+import { BankDetailsCard } from "@/components/profile/BankDetailsCard";
 
 export default function Profile() {
   const [personalInfo, setPersonalInfo] = useState({
@@ -18,6 +20,25 @@ export default function Profile() {
     pincode: "122001",
     panNumber: "ABCPS1234K",
     aadharNumber: "1234 5678 9012",
+  });
+
+  const [emergencyContact, setEmergencyContact] = useState({
+    name: "Sunita Sharma",
+    relationship: "spouse",
+    phone: "+91 98765 12345",
+    alternatePhone: "",
+    address: "123 Sector 15, DLF Phase 2, Gurugram",
+  });
+
+  const [bankDetails, setBankDetails] = useState({
+    accountHolderName: "Amit Sharma",
+    accountNumber: "1234567890123456",
+    confirmAccountNumber: "1234567890123456",
+    bankName: "HDFC Bank",
+    branchName: "Sector 15, Gurugram",
+    ifscCode: "HDFC0001234",
+    accountType: "Savings",
+    isVerified: true,
   });
 
   const employmentInfo = {
@@ -60,6 +81,14 @@ export default function Profile() {
               onInfoChange={setPersonalInfo}
             />
             <EmploymentInfoCard info={employmentInfo} />
+            <EmergencyContactCard
+              contact={emergencyContact}
+              onContactChange={setEmergencyContact}
+            />
+            <BankDetailsCard
+              details={bankDetails}
+              onDetailsChange={setBankDetails}
+            />
           </div>
         </div>
       </div>

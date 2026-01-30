@@ -5,6 +5,7 @@ import { PersonalInfoCard } from "@/components/profile/PersonalInfoCard";
 import { EmploymentInfoCard } from "@/components/profile/EmploymentInfoCard";
 import { EmergencyContactCard } from "@/components/profile/EmergencyContactCard";
 import { BankDetailsCard } from "@/components/profile/BankDetailsCard";
+import { DocumentUploadCard } from "@/components/profile/DocumentUploadCard";
 
 export default function Profile() {
   const [personalInfo, setPersonalInfo] = useState({
@@ -89,6 +90,7 @@ export default function Profile() {
               details={bankDetails}
               onDetailsChange={setBankDetails}
             />
+            <DocumentUploadCard />
           </div>
         </div>
       </div>

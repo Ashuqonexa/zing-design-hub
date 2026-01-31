@@ -1,4 +1,5 @@
 import { User, Palette, Clock, Languages } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/select";
 
 export function UserPreferencesCard() {
+  const { theme, setTheme } = useTheme();
+
   return (
     <Card>
       <CardHeader>
@@ -30,7 +33,7 @@ export function UserPreferencesCard() {
               <Palette className="h-4 w-4" />
               Theme
             </Label>
-            <Select defaultValue="light">
+            <Select value={theme} onValueChange={setTheme}>
               <SelectTrigger>
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>

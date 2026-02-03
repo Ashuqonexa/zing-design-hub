@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, Sparkles } from "lucide-react";
+import { Bell, ChevronDown, Sparkles, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const navTabs = [
   "Dashboard",
@@ -27,6 +29,24 @@ interface HeaderProps {
 
 export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
+    navigate("/auth", { replace: true });
+  };
+
+  // Get user initials from email
+  const userEmail = user?.email || "";
+  const userInitials = userEmail
+    .split("@")[0]
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-card border-b border-border flex items-center justify-between px-6">
@@ -68,9 +88,9 @@ export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-colors">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=amit" />
+                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail}`} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                  AM
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
@@ -79,9 +99,9 @@ export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span className="font-semibold">Amit Sharma</span>
+                <span className="font-semibold">{userEmail.split("@")[0]}</span>
                 <span className="text-xs text-muted-foreground">
-                  amit@qonexa.com
+                  {userEmail}
                 </span>
               </div>
             </DropdownMenuLabel>
@@ -94,7 +114,8 @@ export function Header({ activeTab = "Dashboard", onTabChange }: HeaderProps) {
             </DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

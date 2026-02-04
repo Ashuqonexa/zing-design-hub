@@ -1,4 +1,5 @@
-import { AlertCircle, Phone, User, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AlertCircle, Phone, User, Heart, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
 
 interface EmergencyContact {
   name: string;
@@ -22,19 +22,29 @@ interface EmergencyContact {
 
 interface EmergencyContactCardProps {
   contact: EmergencyContact;
-  onContactChange?: (contact: EmergencyContact) => void;
+  onSave?: (contact: EmergencyContact) => Promise<{ error: Error | null }>;
+  saving?: boolean;
 }
 
-export function EmergencyContactCard({ contact, onContactChange }: EmergencyContactCardProps) {
-  const handleSave = () => {
-    toast({
-      title: "Emergency Contact Updated",
-      description: "Your emergency contact information has been saved.",
-    });
+export function EmergencyContactCard({ contact, onSave, saving }: EmergencyContactCardProps) {
+  const [formData, setFormData] = useState<EmergencyContact>(contact);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setFormData(contact);
+    setHasChanges(false);
+  }, [contact]);
+
+  const handleSave = async () => {
+    if (onSave) {
+      await onSave(formData);
+      setHasChanges(false);
+    }
   };
 
   const handleChange = (field: keyof EmergencyContact, value: string) => {
-    onContactChange?.({ ...contact, [field]: value });
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
   };
 
   return (
@@ -57,7 +67,7 @@ export function EmergencyContactCard({ contact, onContactChange }: EmergencyCont
             </Label>
             <Input
               id="contactName"
-              value={contact.name}
+              value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
               placeholder="Full name"
             />
@@ -68,7 +78,7 @@ export function EmergencyContactCard({ contact, onContactChange }: EmergencyCont
               Relationship
             </Label>
             <Select
-              value={contact.relationship}
+              value={formData.relationship}
               onValueChange={(value) => handleChange("relationship", value)}
             >
               <SelectTrigger>
@@ -94,7 +104,7 @@ export function EmergencyContactCard({ contact, onContactChange }: EmergencyCont
             </Label>
             <Input
               id="emergencyPhone"
-              value={contact.phone}
+              value={formData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
               placeholder="+91 98765 43210"
             />
@@ -103,7 +113,7 @@ export function EmergencyContactCard({ contact, onContactChange }: EmergencyCont
             <Label htmlFor="alternatePhone">Alternate Phone</Label>
             <Input
               id="alternatePhone"
-              value={contact.alternatePhone}
+              value={formData.alternatePhone}
               onChange={(e) => handleChange("alternatePhone", e.target.value)}
               placeholder="+91 98765 43210"
             />
@@ -114,14 +124,23 @@ export function EmergencyContactCard({ contact, onContactChange }: EmergencyCont
           <Label htmlFor="emergencyAddress">Address</Label>
           <Input
             id="emergencyAddress"
-            value={contact.address}
+            value={formData.address}
             onChange={(e) => handleChange("address", e.target.value)}
             placeholder="Contact's address"
           />
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave}>Save Contact</Button>
+          <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Contact"
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>

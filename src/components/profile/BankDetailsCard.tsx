@@ -1,4 +1,5 @@
-import { Building2, CreditCard, Hash, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Building2, CreditCard, Hash, FileText, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,12 +20,28 @@ interface BankDetails {
 
 interface BankDetailsCardProps {
   details: BankDetails;
-  onDetailsChange?: (details: BankDetails) => void;
+  onSave?: (details: {
+    accountHolderName: string;
+    accountNumber: string;
+    bankName: string;
+    branchName: string;
+    ifscCode: string;
+    accountType: string;
+  }) => Promise<{ error: Error | null }>;
+  saving?: boolean;
 }
 
-export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardProps) {
-  const handleSave = () => {
-    if (details.accountNumber !== details.confirmAccountNumber) {
+export function BankDetailsCard({ details, onSave, saving }: BankDetailsCardProps) {
+  const [formData, setFormData] = useState<BankDetails>(details);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setFormData(details);
+    setHasChanges(false);
+  }, [details]);
+
+  const handleSave = async () => {
+    if (formData.accountNumber !== formData.confirmAccountNumber) {
       toast({
         title: "Account Numbers Don't Match",
         description: "Please ensure both account numbers are the same.",
@@ -32,19 +49,23 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
       });
       return;
     }
-    toast({
-      title: "Bank Details Updated",
-      description: "Your bank account information has been saved.",
-    });
+    
+    if (onSave) {
+      await onSave({
+        accountHolderName: formData.accountHolderName,
+        accountNumber: formData.accountNumber,
+        bankName: formData.bankName,
+        branchName: formData.branchName,
+        ifscCode: formData.ifscCode,
+        accountType: formData.accountType,
+      });
+      setHasChanges(false);
+    }
   };
 
   const handleChange = (field: keyof BankDetails, value: string | boolean) => {
-    onDetailsChange?.({ ...details, [field]: value });
-  };
-
-  const maskAccountNumber = (num: string) => {
-    if (num.length <= 4) return num;
-    return "•".repeat(num.length - 4) + num.slice(-4);
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
   };
 
   return (
@@ -60,7 +81,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
               Your salary will be credited to this account
             </CardDescription>
           </div>
-          {details.isVerified ? (
+          {formData.isVerified ? (
             <Badge variant="default" className="bg-green-500">Verified</Badge>
           ) : (
             <Badge variant="secondary">Pending Verification</Badge>
@@ -75,7 +96,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
           </Label>
           <Input
             id="accountHolder"
-            value={details.accountHolderName}
+            value={formData.accountHolderName}
             onChange={(e) => handleChange("accountHolderName", e.target.value)}
             placeholder="Name as per bank records"
           />
@@ -89,7 +110,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             </Label>
             <Input
               id="accountNumber"
-              value={details.accountNumber}
+              value={formData.accountNumber}
               onChange={(e) => handleChange("accountNumber", e.target.value)}
               placeholder="Enter account number"
               type="password"
@@ -99,7 +120,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             <Label htmlFor="confirmAccount">Confirm Account Number</Label>
             <Input
               id="confirmAccount"
-              value={details.confirmAccountNumber}
+              value={formData.confirmAccountNumber}
               onChange={(e) => handleChange("confirmAccountNumber", e.target.value)}
               placeholder="Re-enter account number"
             />
@@ -114,7 +135,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             </Label>
             <Input
               id="bankName"
-              value={details.bankName}
+              value={formData.bankName}
               onChange={(e) => handleChange("bankName", e.target.value)}
               placeholder="e.g., HDFC Bank"
             />
@@ -123,7 +144,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             <Label htmlFor="branchName">Branch Name</Label>
             <Input
               id="branchName"
-              value={details.branchName}
+              value={formData.branchName}
               onChange={(e) => handleChange("branchName", e.target.value)}
               placeholder="e.g., Sector 15, Gurugram"
             />
@@ -138,7 +159,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             </Label>
             <Input
               id="ifsc"
-              value={details.ifscCode}
+              value={formData.ifscCode}
               onChange={(e) => handleChange("ifscCode", e.target.value.toUpperCase())}
               placeholder="e.g., HDFC0001234"
               maxLength={11}
@@ -148,7 +169,7 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
             <Label htmlFor="accountType">Account Type</Label>
             <Input
               id="accountType"
-              value={details.accountType}
+              value={formData.accountType}
               onChange={(e) => handleChange("accountType", e.target.value)}
               placeholder="e.g., Savings"
             />
@@ -156,7 +177,16 @@ export function BankDetailsCard({ details, onDetailsChange }: BankDetailsCardPro
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave}>Save Bank Details</Button>
+          <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Bank Details"
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>

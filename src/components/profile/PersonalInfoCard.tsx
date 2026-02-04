@@ -1,4 +1,5 @@
-import { User, Mail, Phone, MapPin, Calendar, CreditCard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, MapPin, Calendar, CreditCard, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
 
 interface PersonalInfo {
   firstName: string;
@@ -30,19 +30,29 @@ interface PersonalInfo {
 
 interface PersonalInfoCardProps {
   info: PersonalInfo;
-  onInfoChange?: (info: PersonalInfo) => void;
+  onSave?: (info: PersonalInfo) => Promise<{ error: Error | null }>;
+  saving?: boolean;
 }
 
-export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) {
-  const handleSave = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your personal information has been saved successfully.",
-    });
+export function PersonalInfoCard({ info, onSave, saving }: PersonalInfoCardProps) {
+  const [formData, setFormData] = useState<PersonalInfo>(info);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setFormData(info);
+    setHasChanges(false);
+  }, [info]);
+
+  const handleSave = async () => {
+    if (onSave) {
+      await onSave(formData);
+      setHasChanges(false);
+    }
   };
 
   const handleChange = (field: keyof PersonalInfo, value: string) => {
-    onInfoChange?.({ ...info, [field]: value });
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
   };
 
   return (
@@ -63,7 +73,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
-              value={info.firstName}
+              value={formData.firstName}
               onChange={(e) => handleChange("firstName", e.target.value)}
             />
           </div>
@@ -71,7 +81,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="lastName">Last Name</Label>
             <Input
               id="lastName"
-              value={info.lastName}
+              value={formData.lastName}
               onChange={(e) => handleChange("lastName", e.target.value)}
             />
           </div>
@@ -87,9 +97,11 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Input
               id="email"
               type="email"
-              value={info.email}
-              onChange={(e) => handleChange("email", e.target.value)}
+              value={formData.email}
+              disabled
+              className="bg-muted"
             />
+            <p className="text-xs text-muted-foreground">Email cannot be changed</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
@@ -98,7 +110,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             </Label>
             <Input
               id="phone"
-              value={info.phone}
+              value={formData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
             />
           </div>
@@ -114,14 +126,14 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Input
               id="dob"
               type="date"
-              value={info.dateOfBirth}
+              value={formData.dateOfBirth}
               onChange={(e) => handleChange("dateOfBirth", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Gender</Label>
             <Select
-              value={info.gender}
+              value={formData.gender}
               onValueChange={(value) => handleChange("gender", value)}
             >
               <SelectTrigger>
@@ -145,7 +157,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
           </Label>
           <Textarea
             id="address"
-            value={info.address}
+            value={formData.address}
             onChange={(e) => handleChange("address", e.target.value)}
             rows={2}
           />
@@ -156,7 +168,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="city">City</Label>
             <Input
               id="city"
-              value={info.city}
+              value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
             />
           </div>
@@ -164,7 +176,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="state">State</Label>
             <Input
               id="state"
-              value={info.state}
+              value={formData.state}
               onChange={(e) => handleChange("state", e.target.value)}
             />
           </div>
@@ -172,7 +184,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="pincode">PIN Code</Label>
             <Input
               id="pincode"
-              value={info.pincode}
+              value={formData.pincode}
               onChange={(e) => handleChange("pincode", e.target.value)}
             />
           </div>
@@ -187,7 +199,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             </Label>
             <Input
               id="pan"
-              value={info.panNumber}
+              value={formData.panNumber}
               onChange={(e) => handleChange("panNumber", e.target.value.toUpperCase())}
               placeholder="AAAAA0000A"
               maxLength={10}
@@ -197,7 +209,7 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
             <Label htmlFor="aadhar">Aadhar Number</Label>
             <Input
               id="aadhar"
-              value={info.aadharNumber}
+              value={formData.aadharNumber}
               onChange={(e) => handleChange("aadharNumber", e.target.value)}
               placeholder="0000 0000 0000"
               maxLength={14}
@@ -206,7 +218,16 @@ export function PersonalInfoCard({ info, onInfoChange }: PersonalInfoCardProps) 
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>

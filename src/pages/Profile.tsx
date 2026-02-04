@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProfilePhotoCard } from "@/components/profile/ProfilePhotoCard";
 import { PersonalInfoCard } from "@/components/profile/PersonalInfoCard";
@@ -9,51 +8,106 @@ import { DocumentUploadCard } from "@/components/profile/DocumentUploadCard";
 import { SkillsCertificationsCard } from "@/components/profile/SkillsCertificationsCard";
 import { WorkHistoryCard } from "@/components/profile/WorkHistoryCard";
 import { EducationHistoryCard } from "@/components/profile/EducationHistoryCard";
+import { useProfile } from "@/hooks/useProfile";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
 export default function Profile() {
-  const [personalInfo, setPersonalInfo] = useState({
-    firstName: "Amit",
-    lastName: "Sharma",
-    email: "amit.sharma@qonexa.com",
-    phone: "+91 98765 43210",
-    dateOfBirth: "1992-05-15",
-    gender: "male",
-    address: "123 Sector 15, DLF Phase 2",
-    city: "Gurugram",
-    state: "Haryana",
-    pincode: "122001",
-    panNumber: "ABCPS1234K",
-    aadharNumber: "1234 5678 9012",
-  });
+  const {
+    profile,
+    loading,
+    saving,
+    updatePersonalInfo,
+    updateEmergencyContact,
+    updateBankDetails,
+    updateAvatar,
+  } = useProfile();
 
-  const [emergencyContact, setEmergencyContact] = useState({
-    name: "Sunita Sharma",
-    relationship: "spouse",
-    phone: "+91 98765 12345",
-    alternatePhone: "",
-    address: "123 Sector 15, DLF Phase 2, Gurugram",
-  });
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-72 mt-2" />
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent className="flex flex-col items-center gap-4">
+                  <Skeleton className="h-32 w-32 rounded-full" />
+                  <Skeleton className="h-8 w-24" />
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-48" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const [bankDetails, setBankDetails] = useState({
-    accountHolderName: "Amit Sharma",
-    accountNumber: "1234567890123456",
-    confirmAccountNumber: "1234567890123456",
-    bankName: "HDFC Bank",
-    branchName: "Sector 15, Gurugram",
-    ifscCode: "HDFC0001234",
-    accountType: "Savings",
-    isVerified: true,
-  });
+  const personalInfo = {
+    firstName: profile?.first_name || "",
+    lastName: profile?.last_name || "",
+    email: profile?.email || "",
+    phone: profile?.phone || "",
+    dateOfBirth: profile?.date_of_birth || "",
+    gender: profile?.gender || "",
+    address: profile?.address || "",
+    city: profile?.city || "",
+    state: profile?.state || "",
+    pincode: profile?.pincode || "",
+    panNumber: profile?.pan_number || "",
+    aadharNumber: profile?.aadhar_number || "",
+  };
+
+  const emergencyContact = {
+    name: profile?.emergency_contact_name || "",
+    relationship: profile?.emergency_contact_relationship || "",
+    phone: profile?.emergency_contact_phone || "",
+    alternatePhone: profile?.emergency_contact_alternate_phone || "",
+    address: profile?.emergency_contact_address || "",
+  };
+
+  const bankDetails = {
+    accountHolderName: profile?.bank_account_holder_name || "",
+    accountNumber: profile?.bank_account_number || "",
+    confirmAccountNumber: profile?.bank_account_number || "",
+    bankName: profile?.bank_name || "",
+    branchName: profile?.bank_branch_name || "",
+    ifscCode: profile?.bank_ifsc_code || "",
+    accountType: profile?.bank_account_type || "",
+    isVerified: profile?.bank_verified || false,
+  };
 
   const employmentInfo = {
-    employeeId: "EMP001",
-    department: "Engineering",
-    designation: "Senior Software Engineer",
-    joiningDate: "2021-03-15",
-    employmentType: "Full-time",
-    reportingManager: "Priya Patel",
-    workLocation: "Gurugram Office",
-    status: "active" as const,
+    employeeId: profile?.employee_id || "Not assigned",
+    department: profile?.department || "Not assigned",
+    designation: profile?.designation || profile?.job_title || "Not assigned",
+    joiningDate: profile?.joining_date || new Date().toISOString().split("T")[0],
+    employmentType: profile?.employment_type || "Full-time",
+    reportingManager: profile?.reporting_manager || "Not assigned",
+    workLocation: profile?.work_location || "Not assigned",
+    status: (profile?.employment_status as "active" | "on-leave" | "inactive") || "active",
   };
+
+  const fullName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "User";
 
   return (
     <DashboardLayout>
@@ -71,9 +125,10 @@ export default function Profile() {
           {/* Left Column - Photo */}
           <div className="lg:col-span-1">
             <ProfilePhotoCard
-              currentPhoto="https://api.dicebear.com/7.x/avataaars/svg?seed=amit"
-              name={`${personalInfo.firstName} ${personalInfo.lastName}`}
-              onPhotoChange={(url) => console.log("Photo changed:", url)}
+              currentPhoto={profile?.avatar_url || undefined}
+              name={fullName}
+              onPhotoChange={updateAvatar}
+              saving={saving}
             />
           </div>
 
@@ -81,16 +136,19 @@ export default function Profile() {
           <div className="lg:col-span-2 space-y-6">
             <PersonalInfoCard
               info={personalInfo}
-              onInfoChange={setPersonalInfo}
+              onSave={updatePersonalInfo}
+              saving={saving}
             />
             <EmploymentInfoCard info={employmentInfo} />
             <EmergencyContactCard
               contact={emergencyContact}
-              onContactChange={setEmergencyContact}
+              onSave={updateEmergencyContact}
+              saving={saving}
             />
             <BankDetailsCard
               details={bankDetails}
-              onDetailsChange={setBankDetails}
+              onSave={updateBankDetails}
+              saving={saving}
             />
             <WorkHistoryCard />
             <EducationHistoryCard />

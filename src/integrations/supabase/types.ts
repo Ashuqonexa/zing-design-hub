@@ -55,40 +55,124 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhar_number: string | null
+          address: string | null
           avatar_url: string | null
+          bank_account_holder_name: string | null
+          bank_account_number: string | null
+          bank_account_type: string | null
+          bank_branch_name: string | null
+          bank_ifsc_code: string | null
+          bank_name: string | null
+          bank_verified: boolean | null
+          city: string | null
           created_at: string
+          date_of_birth: string | null
           department: string | null
+          designation: string | null
+          email: string | null
+          emergency_contact_address: string | null
+          emergency_contact_alternate_phone: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          employee_id: string | null
+          employment_status: string | null
+          employment_type: string | null
           first_name: string | null
+          gender: string | null
           id: string
           job_title: string | null
+          joining_date: string | null
           last_name: string | null
+          pan_number: string | null
           phone: string | null
+          pincode: string | null
+          reporting_manager: string | null
+          state: string | null
           updated_at: string
           user_id: string
+          work_location: string | null
         }
         Insert: {
+          aadhar_number?: string | null
+          address?: string | null
           avatar_url?: string | null
+          bank_account_holder_name?: string | null
+          bank_account_number?: string | null
+          bank_account_type?: string | null
+          bank_branch_name?: string | null
+          bank_ifsc_code?: string | null
+          bank_name?: string | null
+          bank_verified?: boolean | null
+          city?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
+          emergency_contact_address?: string | null
+          emergency_contact_alternate_phone?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employee_id?: string | null
+          employment_status?: string | null
+          employment_type?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
           job_title?: string | null
+          joining_date?: string | null
           last_name?: string | null
+          pan_number?: string | null
           phone?: string | null
+          pincode?: string | null
+          reporting_manager?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
+          work_location?: string | null
         }
         Update: {
+          aadhar_number?: string | null
+          address?: string | null
           avatar_url?: string | null
+          bank_account_holder_name?: string | null
+          bank_account_number?: string | null
+          bank_account_type?: string | null
+          bank_branch_name?: string | null
+          bank_ifsc_code?: string | null
+          bank_name?: string | null
+          bank_verified?: boolean | null
+          city?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
+          emergency_contact_address?: string | null
+          emergency_contact_alternate_phone?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employee_id?: string | null
+          employment_status?: string | null
+          employment_type?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
           job_title?: string | null
+          joining_date?: string | null
           last_name?: string | null
+          pan_number?: string | null
           phone?: string | null
+          pincode?: string | null
+          reporting_manager?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
+          work_location?: string | null
         }
         Relationships: []
       }

@@ -26,7 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Employee, departments, designations } from "@/types/employee";
+import { departments, designations } from "@/types/employee";
+import { Employee } from "@/hooks/useEmployees";
 
 const employeeSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -46,6 +47,7 @@ interface EmployeeDialogProps {
   onOpenChange: (open: boolean) => void;
   employee?: Employee | null;
   onSave: (data: EmployeeFormData) => void;
+  saving?: boolean;
 }
 
 export function EmployeeDialog({
@@ -53,6 +55,7 @@ export function EmployeeDialog({
   onOpenChange,
   employee,
   onSave,
+  saving = false,
 }: EmployeeDialogProps) {
   const isEditing = !!employee;
 
@@ -73,13 +76,13 @@ export function EmployeeDialog({
   useEffect(() => {
     if (employee) {
       form.reset({
-        firstName: employee.firstName,
-        lastName: employee.lastName,
+        firstName: employee.first_name,
+        lastName: employee.last_name,
         email: employee.email,
-        phone: employee.phone,
+        phone: employee.phone || "",
         department: employee.department,
         designation: employee.designation,
-        dateOfJoining: employee.dateOfJoining,
+        dateOfJoining: employee.date_of_joining,
         status: employee.status,
       });
     } else {
@@ -98,8 +101,6 @@ export function EmployeeDialog({
 
   const handleSubmit = (data: EmployeeFormData) => {
     onSave(data);
-    onOpenChange(false);
-    form.reset();
   };
 
   return (
@@ -288,11 +289,12 @@ export function EmployeeDialog({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                disabled={saving}
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                {isEditing ? "Save Changes" : "Add Employee"}
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : isEditing ? "Save Changes" : "Add Employee"}
               </Button>
             </DialogFooter>
           </form>

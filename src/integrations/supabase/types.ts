@@ -53,6 +53,57 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string | null
+          date_of_joining: string
+          department: string
+          designation: string
+          email: string
+          employee_id: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_joining?: string
+          department: string
+          designation: string
+          email: string
+          employee_id: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_joining?: string
+          department?: string
+          designation?: string
+          email?: string
+          employee_id?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhar_number: string | null

@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Employee } from "@/types/employee";
+import { Employee } from "@/hooks/useEmployees";
 import { format } from "date-fns";
 
 interface EmployeeTableProps {
@@ -81,19 +81,22 @@ export function EmployeeTable({
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
+                    {employee.avatar_url && (
+                      <AvatarImage src={employee.avatar_url} alt={`${employee.first_name} ${employee.last_name}`} />
+                    )}
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                      {getInitials(employee.firstName, employee.lastName)}
+                      {getInitials(employee.first_name, employee.last_name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium">
-                      {employee.firstName} {employee.lastName}
+                      {employee.first_name} {employee.last_name}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {employee.email}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {employee.employeeId}
+                      {employee.employee_id}
                     </div>
                   </div>
                 </div>
@@ -107,7 +110,7 @@ export function EmployeeTable({
                 {employee.designation}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {format(new Date(employee.dateOfJoining), "MMM dd, yyyy")}
+                {format(new Date(employee.date_of_joining), "MMM dd, yyyy")}
               </TableCell>
               <TableCell>
                 <Badge

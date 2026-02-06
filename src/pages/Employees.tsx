@@ -5,15 +5,22 @@ import { Button } from "@/components/ui/button";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { EmployeeFilters } from "@/components/employees/EmployeeFilters";
 import { EmployeeDialog } from "@/components/employees/EmployeeDialog";
-import { Employee } from "@/types/employee";
-import { mockEmployees } from "@/data/mockEmployees";
-import { useToast } from "@/hooks/use-toast";
+import { useEmployees, Employee, EmployeeInsert } from "@/hooks/useEmployees";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Employees() {
-  const { toast } = useToast();
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
+  const { 
+    employees, 
+    loading, 
+    addEmployee, 
+    updateEmployee, 
+    deleteEmployee,
+    generateEmployeeId 
+  } = useEmployees();
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,10 +34,10 @@ export default function Employees() {
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
-        employee.firstName.toLowerCase().includes(searchLower) ||
-        employee.lastName.toLowerCase().includes(searchLower) ||
+        employee.first_name.toLowerCase().includes(searchLower) ||
+        employee.last_name.toLowerCase().includes(searchLower) ||
         employee.email.toLowerCase().includes(searchLower) ||
-        employee.employeeId.toLowerCase().includes(searchLower);
+        employee.employee_id.toLowerCase().includes(searchLower);
 
       // Department filter
       const matchesDepartment =
@@ -65,49 +72,94 @@ export default function Employees() {
   };
 
   const handleViewEmployee = (employee: Employee) => {
-    toast({
-      title: "View Employee",
-      description: `Viewing ${employee.firstName} ${employee.lastName}'s profile`,
-    });
+    // For now, just open edit dialog - could navigate to detail page
+    setEditingEmployee(employee);
+    setDialogOpen(true);
   };
 
-  const handleDeleteEmployee = (employee: Employee) => {
-    setEmployees((prev) => prev.filter((e) => e.id !== employee.id));
-    toast({
-      title: "Employee Deleted",
-      description: `${employee.firstName} ${employee.lastName} has been removed`,
-      variant: "destructive",
-    });
+  const handleDeleteEmployee = async (employee: Employee) => {
+    await deleteEmployee(employee.id, `${employee.first_name} ${employee.last_name}`);
   };
 
-  const handleSaveEmployee = (data: Omit<Employee, "id" | "employeeId">) => {
-    if (editingEmployee) {
-      // Update existing employee
-      setEmployees((prev) =>
-        prev.map((e) =>
-          e.id === editingEmployee.id
-            ? { ...e, ...data }
-            : e
-        )
-      );
-      toast({
-        title: "Employee Updated",
-        description: `${data.firstName} ${data.lastName}'s information has been updated`,
-      });
-    } else {
-      // Add new employee
-      const newEmployee: Employee = {
-        id: crypto.randomUUID(),
-        employeeId: `EMP${String(employees.length + 1).padStart(3, "0")}`,
-        ...data,
-      };
-      setEmployees((prev) => [...prev, newEmployee]);
-      toast({
-        title: "Employee Added",
-        description: `${data.firstName} ${data.lastName} has been added to the team`,
-      });
+  const handleSaveEmployee = async (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    department: string;
+    designation: string;
+    dateOfJoining: string;
+    status: "active" | "inactive" | "on-leave";
+  }) => {
+    setSaving(true);
+    try {
+      if (editingEmployee) {
+        await updateEmployee(editingEmployee.id, {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          department: data.department,
+          designation: data.designation,
+          date_of_joining: data.dateOfJoining,
+          status: data.status,
+        });
+      } else {
+        const employeeId = await generateEmployeeId();
+        const newEmployee: EmployeeInsert = {
+          employee_id: employeeId,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          department: data.department,
+          designation: data.designation,
+          date_of_joining: data.dateOfJoining,
+          status: data.status,
+          avatar_url: null,
+        };
+        await addEmployee(newEmployee);
+      }
+      setDialogOpen(false);
+    } finally {
+      setSaving(false);
     }
   };
+
+  // Stats calculations
+  const stats = useMemo(() => ({
+    total: employees.length,
+    active: employees.filter((e) => e.status === "active").length,
+    onLeave: employees.filter((e) => e.status === "on-leave").length,
+    inactive: employees.filter((e) => e.status === "inactive").length,
+  }), [employees]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <Skeleton className="h-8 w-32 mb-2" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-32" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -140,25 +192,25 @@ export default function Employees() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-card rounded-lg border p-4">
             <div className="text-2xl font-bold text-primary">
-              {employees.length}
+              {stats.total}
             </div>
             <div className="text-sm text-muted-foreground">Total Employees</div>
           </div>
           <div className="bg-card rounded-lg border p-4">
             <div className="text-2xl font-bold text-success">
-              {employees.filter((e) => e.status === "active").length}
+              {stats.active}
             </div>
             <div className="text-sm text-muted-foreground">Active</div>
           </div>
           <div className="bg-card rounded-lg border p-4">
             <div className="text-2xl font-bold text-warning">
-              {employees.filter((e) => e.status === "on-leave").length}
+              {stats.onLeave}
             </div>
             <div className="text-sm text-muted-foreground">On Leave</div>
           </div>
           <div className="bg-card rounded-lg border p-4">
             <div className="text-2xl font-bold text-muted-foreground">
-              {employees.filter((e) => e.status === "inactive").length}
+              {stats.inactive}
             </div>
             <div className="text-sm text-muted-foreground">Inactive</div>
           </div>
@@ -194,6 +246,7 @@ export default function Employees() {
           onOpenChange={setDialogOpen}
           employee={editingEmployee}
           onSave={handleSaveEmployee}
+          saving={saving}
         />
       </div>
     </DashboardLayout>

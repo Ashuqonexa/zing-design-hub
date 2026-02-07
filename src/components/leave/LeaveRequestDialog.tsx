@@ -59,12 +59,14 @@ interface LeaveRequestDialogProps {
     days: number;
     reason: string;
   }) => void;
+  saving?: boolean;
 }
 
 export function LeaveRequestDialog({
   open,
   onOpenChange,
   onSubmit,
+  saving = false,
 }: LeaveRequestDialogProps) {
   const [calculatedDays, setCalculatedDays] = useState(0);
 
@@ -96,7 +98,6 @@ export function LeaveRequestDialog({
       days: calculatedDays,
       reason: data.reason,
     });
-    onOpenChange(false);
     form.reset();
   };
 
@@ -262,10 +263,13 @@ export function LeaveRequestDialog({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                disabled={saving}
               >
                 Cancel
               </Button>
-              <Button type="submit">Submit Request</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "Submitting..." : "Submit Request"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

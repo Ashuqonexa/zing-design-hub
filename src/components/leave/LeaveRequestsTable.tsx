@@ -15,7 +15,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -23,13 +22,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { LeaveRequest, leaveTypes, leaveStatusColors } from "@/types/leave";
+import { leaveTypes, leaveStatusColors } from "@/types/leave";
+import { LeaveRequestView } from "@/hooks/useLeaveRequests";
 
 interface LeaveRequestsTableProps {
-  requests: LeaveRequest[];
-  onApprove: (request: LeaveRequest) => void;
-  onReject: (request: LeaveRequest) => void;
-  onView: (request: LeaveRequest) => void;
+  requests: LeaveRequestView[];
+  onApprove: (request: LeaveRequestView) => void;
+  onReject: (request: LeaveRequestView) => void;
   showActions?: boolean;
 }
 
@@ -37,7 +36,6 @@ export function LeaveRequestsTable({
   requests,
   onApprove,
   onReject,
-  onView,
   showActions = true,
 }: LeaveRequestsTableProps) {
   const getInitials = (name: string) => {
@@ -92,9 +90,6 @@ export function LeaveRequestsTable({
                   </Avatar>
                   <div>
                     <div className="font-medium">{request.employeeName}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {request.employeeId}
-                    </div>
                   </div>
                 </div>
               </TableCell>
@@ -157,29 +152,9 @@ export function LeaveRequestsTable({
                         </TooltipTrigger>
                         <TooltipContent>Reject</TooltipContent>
                       </Tooltip>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onView(request)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onView(request)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </TableCell>
               )}

@@ -104,6 +104,90 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_balances: {
+        Row: {
+          created_at: string
+          id: string
+          leave_type: string
+          total: number
+          updated_at: string
+          used: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          leave_type: string
+          total?: number
+          updated_at?: string
+          used?: number
+          user_id: string
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          leave_type?: string
+          total?: number
+          updated_at?: string
+          used?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      leave_requests: {
+        Row: {
+          applied_on: string
+          approved_by: string | null
+          approved_on: string | null
+          comments: string | null
+          created_at: string
+          days: number
+          end_date: string
+          id: string
+          leave_type: string
+          reason: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_on?: string
+          approved_by?: string | null
+          approved_on?: string | null
+          comments?: string | null
+          created_at?: string
+          days: number
+          end_date: string
+          id?: string
+          leave_type: string
+          reason: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_on?: string
+          approved_by?: string | null
+          approved_on?: string | null
+          comments?: string | null
+          created_at?: string
+          days?: number
+          end_date?: string
+          id?: string
+          leave_type?: string
+          reason?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhar_number: string | null

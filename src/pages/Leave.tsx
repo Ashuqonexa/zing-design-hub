@@ -7,16 +7,23 @@ import { LeaveBalanceCard } from "@/components/leave/LeaveBalanceCard";
 import { LeaveRequestsTable } from "@/components/leave/LeaveRequestsTable";
 import { LeaveFilters } from "@/components/leave/LeaveFilters";
 import { LeaveRequestDialog } from "@/components/leave/LeaveRequestDialog";
-import { LeaveRequest, LeaveType } from "@/types/leave";
-import { mockLeaveRequests, mockLeaveBalances } from "@/data/mockLeaves";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { LeaveType } from "@/types/leave";
+import { useLeaveRequests, LeaveRequestView } from "@/hooks/useLeaveRequests";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Leave() {
-  const { toast } = useToast();
-  const [requests, setRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
+  const {
+    requests,
+    balances,
+    loading,
+    submitRequest,
+    approveRequest,
+    rejectRequest,
+  } = useLeaveRequests();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [saving, setSaving] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,14 +42,12 @@ export default function Leave() {
   const filteredRequests = useMemo(() => {
     let filtered = requests;
 
-    // Tab filter
     if (activeTab === "pending") {
       filtered = filtered.filter((r) => r.status === "pending");
     } else if (activeTab === "history") {
       filtered = filtered.filter((r) => r.status !== "pending");
     }
 
-    // Search filter
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       filtered = filtered.filter((r) =>
@@ -50,12 +55,10 @@ export default function Leave() {
       );
     }
 
-    // Type filter
     if (typeFilter && typeFilter !== "all") {
       filtered = filtered.filter((r) => r.leaveType === typeFilter);
     }
 
-    // Status filter
     if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter((r) => r.status === statusFilter);
     }
@@ -69,73 +72,56 @@ export default function Leave() {
     setStatusFilter("");
   };
 
-  const handleApprove = (request: LeaveRequest) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === request.id
-          ? {
-              ...r,
-              status: "approved" as const,
-              approvedBy: "HR Manager",
-              approvedOn: format(new Date(), "yyyy-MM-dd"),
-            }
-          : r
-      )
-    );
-    toast({
-      title: "Leave Approved",
-      description: `${request.employeeName}'s leave request has been approved`,
-    });
+  const handleApprove = async (request: LeaveRequestView) => {
+    await approveRequest(request.id, request.employeeName);
   };
 
-  const handleReject = (request: LeaveRequest) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === request.id
-          ? {
-              ...r,
-              status: "rejected" as const,
-              approvedBy: "HR Manager",
-              approvedOn: format(new Date(), "yyyy-MM-dd"),
-            }
-          : r
-      )
-    );
-    toast({
-      title: "Leave Rejected",
-      description: `${request.employeeName}'s leave request has been rejected`,
-      variant: "destructive",
-    });
+  const handleReject = async (request: LeaveRequestView) => {
+    await rejectRequest(request.id, request.employeeName);
   };
 
-  const handleView = (request: LeaveRequest) => {
-    toast({
-      title: "View Request",
-      description: `Viewing ${request.employeeName}'s leave request details`,
-    });
-  };
-
-  const handleSubmitRequest = (data: {
+  const handleSubmitRequest = async (data: {
     leaveType: LeaveType;
     startDate: string;
     endDate: string;
     days: number;
     reason: string;
   }) => {
-    const newRequest: LeaveRequest = {
-      id: crypto.randomUUID(),
-      employeeId: "EMP001",
-      employeeName: "Current User",
-      ...data,
-      status: "pending",
-      appliedOn: format(new Date(), "yyyy-MM-dd"),
-    };
-    setRequests((prev) => [newRequest, ...prev]);
-    toast({
-      title: "Leave Request Submitted",
-      description: `Your ${data.days}-day leave request has been submitted for approval`,
-    });
+    setSaving(true);
+    try {
+      await submitRequest(data);
+      setDialogOpen(false);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex justify-between">
+            <div>
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-10 w-36" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -157,14 +143,16 @@ export default function Leave() {
         </div>
 
         {/* Leave Balances */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Your Leave Balance</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {mockLeaveBalances.map((balance) => (
-              <LeaveBalanceCard key={balance.type} balance={balance} />
-            ))}
+        {balances.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Your Leave Balance</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {balances.map((balance) => (
+                <LeaveBalanceCard key={balance.type} balance={balance} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -243,7 +231,6 @@ export default function Leave() {
                 requests={filteredRequests}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                onView={handleView}
               />
             </TabsContent>
 
@@ -252,7 +239,6 @@ export default function Leave() {
                 requests={filteredRequests}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                onView={handleView}
               />
             </TabsContent>
 
@@ -261,7 +247,6 @@ export default function Leave() {
                 requests={filteredRequests}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                onView={handleView}
                 showActions={false}
               />
             </TabsContent>
@@ -273,6 +258,7 @@ export default function Leave() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           onSubmit={handleSubmitRequest}
+          saving={saving}
         />
       </div>
     </DashboardLayout>

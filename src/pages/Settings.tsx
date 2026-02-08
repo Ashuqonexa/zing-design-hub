@@ -1,9 +1,11 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, User, Bell, Shield } from "lucide-react";
+import { Building2, User, Bell, Shield, Users } from "lucide-react";
 import { CompanySettingsCard } from "@/components/settings/CompanySettingsCard";
 import { UserPreferencesCard } from "@/components/settings/UserPreferencesCard";
 import { NotificationSettingsCard } from "@/components/settings/NotificationSettingsCard";
+import { RoleManagementCard } from "@/components/settings/RoleManagementCard";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
 export default function Settings() {
+  const { isAdmin } = useUserRole();
+
   const handleSave = (section: string) => {
     toast({
       title: "Settings Saved",
@@ -32,7 +36,7 @@ export default function Settings() {
 
         {/* Settings Tabs */}
         <Tabs defaultValue="company" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-5' : 'grid-cols-4'} lg:w-auto lg:inline-grid`}>
             <TabsTrigger value="company" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Company</span>
@@ -49,6 +53,12 @@ export default function Settings() {
               <Shield className="h-4 w-4" />
               <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="roles" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Roles</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="company">
@@ -155,6 +165,12 @@ export default function Settings() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="roles">
+              <RoleManagementCard />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </DashboardLayout>

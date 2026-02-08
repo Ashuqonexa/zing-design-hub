@@ -9,6 +9,7 @@ import { LeaveFilters } from "@/components/leave/LeaveFilters";
 import { LeaveRequestDialog } from "@/components/leave/LeaveRequestDialog";
 import { LeaveType } from "@/types/leave";
 import { useLeaveRequests, LeaveRequestView } from "@/hooks/useLeaveRequests";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Leave() {
@@ -20,6 +21,8 @@ export default function Leave() {
     approveRequest,
     rejectRequest,
   } = useLeaveRequests();
+
+  const { isAdminOrManager } = useUserRole();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -231,6 +234,7 @@ export default function Leave() {
                 requests={filteredRequests}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                showActions={isAdminOrManager}
               />
             </TabsContent>
 
@@ -239,6 +243,7 @@ export default function Leave() {
                 requests={filteredRequests}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                showActions={isAdminOrManager}
               />
             </TabsContent>
 

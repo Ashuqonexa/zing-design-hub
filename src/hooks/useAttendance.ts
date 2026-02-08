@@ -43,10 +43,10 @@ export function useAttendance() {
     const { data } = await supabase
       .from("attendance_records")
       .select("*")
-      .eq("user_id", user.id)
       .gte("date", start)
       .lte("date", end)
       .order("date", { ascending: true });
+    // RLS handles filtering: regular users see only their own, admins/managers see all
     setMonthRecords(data || []);
   }, [user]);
 
